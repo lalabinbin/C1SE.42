@@ -1,98 +1,297 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const router = useRouter();
+  const [userName, setUserName] = useState("");
+  const { t, language, setLanguage } = useLanguage();
+  const { colors, themeMode, setThemeMode } = useTheme();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  useEffect(() => {
+    const getUser = async () => {
+      const userDataString = await AsyncStorage.getItem("currentUser");
+      if (userDataString) {
+        const userData = JSON.parse(userDataString);
+        if (userData && userData[0]) setUserName(userData[0].name);
+      }
+    };
+    getUser();
+  }, []);
+
+  const showLanguageOptions = () => {
+    Alert.alert(t("home.selectLanguage"), "", [
+      { text: "English", onPress: () => setLanguage("en") },
+      { text: "Tiếng Việt", onPress: () => setLanguage("vi") },
+      { text: "한국어", onPress: () => setLanguage("ko") },
+      { text: "日本語", onPress: () => setLanguage("ja") },
+      { text: "中文", onPress: () => setLanguage("zh") },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
+  const showThemeOptions = () => {
+    Alert.alert(t("home.selectTheme"), "", [
+      { text: t("home.light"), onPress: () => setThemeMode("light") },
+      { text: t("home.dark"), onPress: () => setThemeMode("dark") },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
+        <View>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            {t("home.title")}
+          </Text>
+          <Text
+            style={[styles.headerSubtitle, { color: colors.textSecondary }]}
+          >
+            {t("home.welcome").replace("{name}", userName || "Student")}
+          </Text>
+        </View>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={showLanguageOptions}
+            style={styles.actionButton}
+          >
+            <Ionicons name="language" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={showThemeOptions}
+            style={styles.actionButton}
+          >
+            <Ionicons
+              name={
+                themeMode === "dark"
+                  ? "moon"
+                  : themeMode === "light"
+                  ? "sunny"
+                  : "contrast"
+              }
+              size={24}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={[styles.welcomeCard, { backgroundColor: colors.surface }]}>
+          <View>
+            <Text style={[styles.welcomeTitle, { color: colors.text }]}>
+              {t("home.welcome").replace("{name}", userName || "Student")}
+            </Text>
+            <Text style={[styles.welcomeSub, { color: colors.textSecondary }]}>
+              {t("home.ready")}
+            </Text>
+            <TouchableOpacity
+              style={[styles.levelTag, { backgroundColor: colors.primary }]}
+            >
+              <Text style={styles.levelText}>{t("home.beginner")}</Text>
+            </TouchableOpacity>
+          </View>
+          <Image
+            source={{
+              uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+            }}
+            style={styles.studentImage}
+          />
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          {t("home.newLesson")}
+        </Text>
+        <View style={[styles.lessonCard, { backgroundColor: colors.surface }]}>
+          <Image
+            source={{
+              uri: "https://cdn-icons-png.flaticon.com/512/2936/2936886.png",
+            }}
+            style={styles.vietnamImage}
+          />
+          <View style={styles.lessonContent}>
+            <Text style={[styles.lessonTitle, { color: colors.text }]}>
+              {t("home.vietnameseAlphabet")}
+            </Text>
+            <Text style={[styles.lessonSub, { color: colors.textSecondary }]}>
+              {t("home.alphabetDesc")}
+            </Text>
+            <TouchableOpacity
+              style={[styles.startButton, { backgroundColor: colors.primary }]}
+            >
+              <Text style={styles.startText}>{t("home.startLearning")}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          {t("home.exploreMore")}
+        </Text>
+        <View style={styles.extraContainer}>
+          <TouchableOpacity
+            style={[styles.extraBox, { backgroundColor: colors.surface }]}
+            onPress={() => router.push("/speak")}
+          >
+            <Ionicons name="mic-outline" size={26} color={colors.primary} />
+            <Text style={[styles.extraTitle, { color: colors.text }]}>
+              {t("home.pronunciation")}
+            </Text>
+            <Text style={[styles.extraSub, { color: colors.textSecondary }]}>
+              {t("home.pronunciationDesc")}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.extraBox, { backgroundColor: colors.surface }]}
+            onPress={() => router.push("/quiz")}
+          >
+            <Ionicons
+              name="game-controller-outline"
+              size={26}
+              color="#E53E3E"
+            />
+            <Text style={[styles.extraTitle, { color: colors.text }]}>
+              {t("home.games")}
+            </Text>
+            <Text style={[styles.extraSub, { color: colors.textSecondary }]}>
+              {t("home.gamesDesc")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  header: {
+    padding: 20,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+  },
+  headerActions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  actionButton: {
+    padding: 8,
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+
+  welcomeCard: {
+    flexDirection: "row",
+    borderRadius: 12,
+    padding: 16,
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  welcomeTitle: { fontSize: 16, fontWeight: "700", marginTop: 4 },
+  welcomeSub: { fontSize: 14, marginTop: 4 },
+  levelTag: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  levelText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+  studentImage: { width: 60, height: 60, resizeMode: "contain" },
+
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+
+  lessonCard: {
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  vietnamImage: { width: "100%", height: 150, resizeMode: "contain" },
+  lessonContent: { marginTop: 8 },
+  lessonTitle: { fontSize: 16, fontWeight: "700" },
+  lessonSub: { fontSize: 14, marginVertical: 6 },
+  startButton: {
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  startText: { color: "#fff", fontWeight: "600" },
+
+  extraContainer: { flexDirection: "row", justifyContent: "space-between" },
+  extraBox: {
+    width: "48%",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  extraTitle: { fontSize: 15, fontWeight: "600", marginTop: 6 },
+  extraSub: {
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: 4,
+  },
+
+  bottomTab: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderColor: "#E2E8F0",
+    marginTop: 20,
   },
 });
