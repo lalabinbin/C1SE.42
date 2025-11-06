@@ -1,14 +1,26 @@
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
 
-export default function TabsLayout() {
-  const { t } = useLanguage();
-  const { colors, themeMode } = useTheme();
+import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 
-  const isDark = themeMode === "dark";
+export default function TeacherLayout() {
+  return (
+    <AuthProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <InnerTabs />
+        </LanguageProvider>
+      </ThemeProvider>
+    </AuthProvider>
+  );
+}
+
+function InnerTabs() {
+  const { colors, themeMode } = useTheme();
+  const { t } = useLanguage();
 
   const tabBarStyle = {
     backgroundColor: colors.card,
@@ -32,65 +44,59 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle,
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: "600",
-          marginTop: 4,
-          color: colors.text,
-        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "600", marginTop: 4 },
         tabBarIconStyle: { marginBottom: 2 },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: t("home.title"),
+          title: t("dashboard.title"),
           tabBarIcon: ({ color }) => (
             <Ionicons name="home-outline" color={color} size={22} />
           ),
         }}
       />
-
       <Tabs.Screen
-        name="lesson"
+        name="courses"
         options={{
-          title: t("lessons.title"),
+          title: t("courses.title"),
           tabBarIcon: ({ color }) => (
             <Ionicons name="book-outline" color={color} size={22} />
           ),
         }}
       />
-
       <Tabs.Screen
-        name="speak"
-        options={{
-          title: t("home.pronunciation"),
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="mic-outline" color={color} size={22} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="quiz"
+        name="quizzes"
         options={{
           title: t("quizzes.title"),
           tabBarIcon: ({ color }) => (
-            <Ionicons name="help-circle-outline" color={color} size={22} />
+            <Ionicons name="pencil-outline" color={color} size={22} />
           ),
         }}
       />
-
       <Tabs.Screen
-        name="progress"
+        name="students"
         options={{
-          title: t("home.exploreMore"),
+          title: t("students.title"),
           tabBarIcon: ({ color }) => (
-            <Ionicons name="bar-chart-outline" color={color} size={22} />
+            <Ionicons name="people-outline" color={color} size={22} />
           ),
         }}
       />
-
+      <Tabs.Screen
+        name="communication"
+        options={{
+          title: t("communication.title"),
+          tabBarIcon: ({ color }) => (
+            <Ionicons
+              name="chatbubble-ellipses-outline"
+              color={color}
+              size={22}
+            />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="profile"
         options={{

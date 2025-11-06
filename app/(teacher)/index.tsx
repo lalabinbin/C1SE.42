@@ -15,7 +15,7 @@ import {
   View,
 } from "react-native";
 
-export default function HomeScreen() {
+export default function TeacherDashboard() {
   const router = useRouter();
   const [userName, setUserName] = useState("");
   const { t, language, setLanguage } = useLanguage();
@@ -37,7 +37,7 @@ export default function HomeScreen() {
   }, []);
 
   const showLanguageOptions = () => {
-    Alert.alert(t("home.selectLanguage"), "", [
+    Alert.alert(t("dashboard.selectLanguage"), "", [
       { text: "English", onPress: () => setLanguage("en") },
       { text: "Tiếng Việt", onPress: () => setLanguage("vi") },
       { text: "한국어", onPress: () => setLanguage("ko") },
@@ -48,9 +48,9 @@ export default function HomeScreen() {
   };
 
   const showThemeOptions = () => {
-    Alert.alert(t("home.selectTheme"), "", [
-      { text: t("home.light"), onPress: () => setThemeMode("light") },
-      { text: t("home.dark"), onPress: () => setThemeMode("dark") },
+    Alert.alert(t("dashboard.selectTheme"), "", [
+      { text: t("dashboard.light"), onPress: () => setThemeMode("light") },
+      { text: t("dashboard.dark"), onPress: () => setThemeMode("dark") },
       { text: "Cancel", style: "cancel" },
     ]);
   };
@@ -67,12 +67,12 @@ export default function HomeScreen() {
       >
         <View>
           <Text style={[styles.headerTitle, { color: colors.text }]}>
-            {t("home.title")}
+            {t("dashboard.title") || "Dashboard"}
           </Text>
           <Text
             style={[styles.headerSubtitle, { color: colors.textSecondary }]}
           >
-            {t("home.welcome").replace("{name}", userName || "Student")}
+            {t("dashboard.welcome").replace("{name}", userName || "Teacher")}
           </Text>
         </View>
         <View style={styles.headerActions}>
@@ -101,85 +101,87 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {/* Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Welcome Card */}
         <View style={[styles.welcomeCard, { backgroundColor: colors.surface }]}>
           <View>
             <Text style={[styles.welcomeTitle, { color: colors.text }]}>
-              {t("home.welcome").replace("{name}", userName || "Student")}
+              {t("dashboard.welcome").replace("{name}", userName || "Teacher")}
             </Text>
             <Text style={[styles.welcomeSub, { color: colors.textSecondary }]}>
-              {t("home.ready")}
+              {t("dashboard.readyToManage")}
             </Text>
             <TouchableOpacity
               style={[styles.levelTag, { backgroundColor: colors.primary }]}
             >
-              <Text style={styles.levelText}>{t("home.beginner")}</Text>
+              <Text style={styles.levelText}>{t("dashboard.teacher")}</Text>
             </TouchableOpacity>
           </View>
           <Image
             source={{
               uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
             }}
-            style={styles.studentImage}
+            style={styles.teacherImage}
           />
         </View>
 
+        {/* Quick Links */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          {t("home.newLesson")}
-        </Text>
-        <View style={[styles.lessonCard, { backgroundColor: colors.surface }]}>
-          <Image
-            source={{
-              uri: "https://cdn-icons-png.flaticon.com/512/2936/2936886.png",
-            }}
-            style={styles.vietnamImage}
-          />
-          <View style={styles.lessonContent}>
-            <Text style={[styles.lessonTitle, { color: colors.text }]}>
-              {t("home.vietnameseAlphabet")}
-            </Text>
-            <Text style={[styles.lessonSub, { color: colors.textSecondary }]}>
-              {t("home.alphabetDesc")}
-            </Text>
-            <TouchableOpacity
-              style={[styles.startButton, { backgroundColor: colors.primary }]}
-            >
-              <Text style={styles.startText}>{t("home.startLearning")}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          {t("home.exploreMore")}
+          {t("dashboard.quickLinks")}
         </Text>
         <View style={styles.extraContainer}>
           <TouchableOpacity
             style={[styles.extraBox, { backgroundColor: colors.surface }]}
-            onPress={() => router.push("/speak")}
+            onPress={() => router.push("/courses")}
           >
-            <Ionicons name="mic-outline" size={26} color={colors.primary} />
+            <Ionicons name="book-outline" size={26} color={colors.primary} />
             <Text style={[styles.extraTitle, { color: colors.text }]}>
-              {t("home.pronunciation")}
+              {t("dashboard.courses")}
             </Text>
             <Text style={[styles.extraSub, { color: colors.textSecondary }]}>
-              {t("home.pronunciationDesc")}
+              {t("dashboard.manageCourses")}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.extraBox, { backgroundColor: colors.surface }]}
-            onPress={() => router.push("/quiz")}
+            onPress={() => router.push("/students")}
           >
-            <Ionicons
-              name="game-controller-outline"
-              size={26}
-              color="#E53E3E"
-            />
+            <Ionicons name="people-outline" size={26} color="#E53E3E" />
             <Text style={[styles.extraTitle, { color: colors.text }]}>
-              {t("home.games")}
+              {t("dashboard.students")}
             </Text>
             <Text style={[styles.extraSub, { color: colors.textSecondary }]}>
-              {t("home.gamesDesc")}
+              {t("dashboard.trackProgress")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.extraContainer}>
+          <TouchableOpacity
+            style={[styles.extraBox, { backgroundColor: colors.surface }]}
+            onPress={() => router.push("/quizzes")}
+          >
+            <Ionicons name="pencil-outline" size={26} color="#38B2AC" />
+            <Text style={[styles.extraTitle, { color: colors.text }]}>
+              {t("dashboard.quizzes")}
+            </Text>
+            <Text style={[styles.extraSub, { color: colors.textSecondary }]}>
+              {t("dashboard.createAndGrade")}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.extraBox, { backgroundColor: colors.surface }]}
+            onPress={() => router.push("/communication")}
+          >
+            <Ionicons name="chatbubbles-outline" size={26} color="#805AD5" />
+            <Text style={[styles.extraTitle, { color: colors.text }]}>
+              {t("dashboard.communication")}
+            </Text>
+            <Text style={[styles.extraSub, { color: colors.textSecondary }]}>
+              {t("dashboard.chatAndQnA")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -225,29 +227,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   levelText: { color: "#fff", fontSize: 12, fontWeight: "600" },
-  studentImage: { width: 60, height: 60, resizeMode: "contain" },
+  teacherImage: { width: 60, height: 60, resizeMode: "contain" },
   sectionTitle: { fontSize: 17, fontWeight: "600", marginBottom: 10 },
-  lessonCard: {
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  vietnamImage: { width: "100%", height: 150, resizeMode: "contain" },
-  lessonContent: { marginTop: 8 },
-  lessonTitle: { fontSize: 16, fontWeight: "700" },
-  lessonSub: { fontSize: 14, marginVertical: 6 },
-  startButton: {
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  startText: { color: "#fff", fontWeight: "600" },
-  extraContainer: { flexDirection: "row", justifyContent: "space-between" },
+  extraContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20 },
   extraBox: {
     width: "48%",
     borderRadius: 12,
@@ -259,14 +241,6 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  extraTitle: { fontSize: 15, textAlign: "center", fontWeight: "600", marginTop: 6 },
+  extraTitle: { fontSize: 15, fontWeight: "600", marginTop: 6 },
   extraSub: { fontSize: 13, textAlign: "center", marginTop: 4 },
-  bottomTab: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderColor: "#E2E8F0",
-    marginTop: 20,
-  },
 });

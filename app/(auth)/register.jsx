@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -11,12 +11,14 @@ import {
 } from "react-native";
 
 export default function RegisterScreen() {
+  const { register } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const router = useRouter();
+
   const handleRegister = async () => {
     if (!email || !phone || !name || !password || !confirmPassword) {
       Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin");
@@ -29,31 +31,11 @@ export default function RegisterScreen() {
     }
 
     try {
-      // Lấy danh sách user đã có (nếu có)
-      const existingData = await AsyncStorage.getItem("users");
-      const users = existingData ? JSON.parse(existingData) : [];
-
-      // Kiểm tra trùng email hoặc số điện thoại
-      const duplicate = users.find(
-        (item) => item.email === email || item.phone === phone
-      );
-      if (duplicate) {
-        Alert.alert("Lỗi", "Email hoặc số điện thoại đã được đăng ký");
-        return;
-      }
-
-      // Tạo user mới
-      const newUser = { email, name, phone, password };
-      users.push(newUser);
-
-
-      // Lưu danh sách và người dùng hiện tại
-      await AsyncStorage.setItem("users", JSON.stringify(users));
-      
-      Alert.alert("Thành công", "Đăng ký thành công!");
-      router.replace("/(auth)/login"); // hoặc đường dẫn Home của bạn
+      await register({ email, name, phone, password });
+      Alert.alert("Thành công", "Đăng ký thành công! Mời bạn đăng nhập.");
+      router.replace("/(auth)/login");
     } catch (error) {
-      Alert.alert("Lỗi", "Không thể đăng ký, thử lại sau");
+      Alert.alert("Lỗi", error.message || "Không thể đăng ký");
     }
   };
 
@@ -70,7 +52,7 @@ export default function RegisterScreen() {
       />
       <TextInput
         style={styles.input}
-        placeholder="Tên"
+        placeholder="Họ tên"
         value={name}
         onChangeText={setName}
       />
@@ -110,17 +92,17 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: 20 },
   title: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 48,
+    marginBottom: 40,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    padding: 10,
+    padding: 12,
     marginBottom: 16,
-    borderRadius: 15,
+    borderRadius: 10,
   },
   btnRegister: {
     backgroundColor: "#636ae8",
@@ -137,8 +119,6 @@ const styles = StyleSheet.create({
   linkText: {
     color: "#636ae8",
     textAlign: "center",
-    marginVertical: 10,
-    marginTop: 33,
-    fontSize: 14,
+    marginTop: 20,
   },
 });

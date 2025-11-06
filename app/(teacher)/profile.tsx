@@ -2,7 +2,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -22,13 +21,12 @@ import {
 export default function ProfileScreen() {
   const { t, language, setLanguage } = useLanguage();
   const { colors, themeMode, setThemeMode } = useTheme();
-  const navigation = useNavigation<any>();
   const router = useRouter();
 
   const [editVisible, setEditVisible] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  // Thông tin user
+  // Thông tin giáo viên
   const [user, setUser] = useState<any>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -38,16 +36,16 @@ export default function ProfileScreen() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // --- Lấy dữ liệu người dùng từ AsyncStorage ---
+  // --- Lấy dữ liệu người dùng ---
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const storedUser = await AsyncStorage.getItem("currentUser");
         if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-          setName(parsedUser.userName || parsedUser.name || "");
-          setEmail(parsedUser.email || "");
+          const parsed = JSON.parse(storedUser);
+          setUser(parsed);
+          setName(parsed.userName || parsed.name || "");
+          setEmail(parsed.email || "");
         }
       } catch (error) {
         console.log("Lỗi khi đọc user:", error);
@@ -96,8 +94,8 @@ export default function ProfileScreen() {
     }
 
     try {
-      const users = JSON.parse(await AsyncStorage.getItem("currentUser"));
-      const updatedUsers = users.map((u: any) =>
+      const users = JSON.parse(await AsyncStorage.getItem("users")) || [];
+      const updated = users.map((u: any) =>
         u.email === user.email && u.password === oldPassword
           ? { ...u, password: newPassword }
           : u
@@ -112,7 +110,7 @@ export default function ProfileScreen() {
         return;
       }
 
-      await AsyncStorage.setItem("users", JSON.stringify(updatedUsers));
+      await AsyncStorage.setItem("users", JSON.stringify(updated));
       Alert.alert("Thành công", "Mật khẩu đã được thay đổi!");
       setPasswordVisible(false);
       setOldPassword("");
@@ -126,14 +124,14 @@ export default function ProfileScreen() {
   // --- Lưu hồ sơ ---
   const handleSaveProfile = async () => {
     try {
-      const users = JSON.parse(await AsyncStorage.getItem("currentUser"));
-      const updatedUsers = users.map((u: any) =>
+      const users = JSON.parse(await AsyncStorage.getItem("users")) || [];
+      const updated = users.map((u: any) =>
         u.email === user.email ? { ...u, userName: name, email } : u
       );
-      await AsyncStorage.setItem("users", JSON.stringify(updatedUsers));
+      await AsyncStorage.setItem("users", JSON.stringify(updated));
       await AsyncStorage.setItem(
         "currentUser",
-        JSON.stringify([{ userName: name, email }])
+        JSON.stringify({ userName: name, email, role: "teacher" })
       );
       Alert.alert("Thành công", "Hồ sơ đã được cập nhật!");
       setEditVisible(false);
@@ -151,10 +149,7 @@ export default function ProfileScreen() {
         style: "destructive",
         onPress: async () => {
           await AsyncStorage.removeItem("currentUser");
-          Alert.alert(
-            t("profile.logoutSuccess"),
-            t("profile.logoutSuccessMessage")
-          );
+          Alert.alert("Đăng xuất thành công", "Bạn đã đăng xuất khỏi hệ thống.");
           router.replace("/(auth)/login");
         },
       },
@@ -162,22 +157,20 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
-    >
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card }]}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>
-          {t("profile.title")}
+          Hồ sơ giáo viên
         </Text>
         <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-          {t("profile.info")}
+          Quản lý thông tin tài khoản của bạn
         </Text>
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={[styles.profileCard, { backgroundColor: colors.surface }]}>
           <Image
-            source={{ uri: "https://i.pravatar.cc/100" }}
+            source={{ uri: "https://i.pravatar.cc/100?img=12" }}
             style={styles.avatar}
           />
           <View style={{ flex: 1 }}>
@@ -193,16 +186,14 @@ export default function ProfileScreen() {
           onPress={() => setEditVisible(true)}
         >
           <Ionicons name="create-outline" size={18} color="#fff" />
-          <Text style={styles.editText}>{t("profile.editProfile")}</Text>
+          <Text style={styles.editText}>Chỉnh sửa hồ sơ</Text>
         </TouchableOpacity>
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          {t("profile.title")}
-        </Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Cài đặt</Text>
 
         <SettingItem
           icon="language-outline"
-          title={t("profile.language")}
+          title="Ngôn ngữ"
           value={
             language === "vi"
               ? "Tiếng Việt"
@@ -219,27 +210,27 @@ export default function ProfileScreen() {
         />
         <SettingItem
           icon="moon-outline"
-          title={t("profile.darkMode")}
-          value={themeMode === "dark" ? t("profile.on") : t("profile.off")}
+          title="Chế độ tối"
+          value={themeMode === "dark" ? "Bật" : "Tắt"}
           onPress={showThemeOptions}
           colors={colors}
         />
         <SettingItem
           icon="shield-outline"
-          title={t("profile.security")}
+          title="Đổi mật khẩu"
           onPress={() => setPasswordVisible(true)}
           colors={colors}
         />
         <SettingItem
           icon="help-circle-outline"
-          title={t("profile.support")}
+          title="Trung tâm hỗ trợ"
           onPress={openSupportLink}
           colors={colors}
         />
 
         <TouchableOpacity style={styles.logout} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={20} color="#d9534f" />
-          <Text style={styles.logoutText}>{t("profile.logout")}</Text>
+          <Text style={styles.logoutText}>Đăng xuất</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -250,20 +241,10 @@ export default function ProfileScreen() {
             <Text style={[styles.modalTitle, { color: colors.text }]}>
               Đổi mật khẩu
             </Text>
-            {[
-              t("profile.oldPassword"),
-              t("profile.newPassword"),
-              t("profile.confirmPassword"),
-            ].map((placeholder, i) => (
+            {[oldPassword, newPassword, confirmPassword].map((val, i) => (
               <TextInput
                 key={i}
-                value={
-                  i === 0
-                    ? oldPassword
-                    : i === 1
-                    ? newPassword
-                    : confirmPassword
-                }
+                value={val}
                 onChangeText={
                   i === 0
                     ? setOldPassword
@@ -271,7 +252,13 @@ export default function ProfileScreen() {
                     ? setNewPassword
                     : setConfirmPassword
                 }
-                placeholder={placeholder}
+                placeholder={
+                  i === 0
+                    ? "Mật khẩu cũ"
+                    : i === 1
+                    ? "Mật khẩu mới"
+                    : "Xác nhận mật khẩu"
+                }
                 secureTextEntry
                 style={[
                   styles.input,
@@ -290,15 +277,13 @@ export default function ProfileScreen() {
                 style={[styles.modalBtn, { backgroundColor: colors.border }]}
                 onPress={() => setPasswordVisible(false)}
               >
-                <Text style={{ color: colors.text }}>
-                  {t("profile.cancel")}
-                </Text>
+                <Text style={{ color: colors.text }}>Hủy</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalBtn, { backgroundColor: colors.primary }]}
                 onPress={handleChangePassword}
               >
-                <Text style={{ color: "#fff" }}>{t("profile.save")}</Text>
+                <Text style={{ color: "#fff" }}>Lưu</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -310,47 +295,41 @@ export default function ProfileScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
-              {t("profile.editProfile")}
+              Chỉnh sửa hồ sơ
             </Text>
-            {[
-              { value: name, setter: setName, placeholder: t("profile.name") },
-              {
-                value: email,
-                setter: setEmail,
-                placeholder: t("profile.email"),
-              },
-            ].map((field, i) => (
-              <TextInput
-                key={i}
-                value={field.value}
-                onChangeText={field.setter}
-                placeholder={field.placeholder}
-                style={[
-                  styles.input,
-                  {
-                    borderColor: colors.border,
-                    color: colors.text,
-                    backgroundColor: colors.surface,
-                  },
-                ]}
-                placeholderTextColor={colors.textSecondary}
-              />
-            ))}
+            {[{ value: name, setter: setName, placeholder: "Tên giáo viên" },
+              { value: email, setter: setEmail, placeholder: "Email" }].map(
+              (f, i) => (
+                <TextInput
+                  key={i}
+                  value={f.value}
+                  onChangeText={f.setter}
+                  placeholder={f.placeholder}
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: colors.border,
+                      color: colors.text,
+                      backgroundColor: colors.surface,
+                    },
+                  ]}
+                  placeholderTextColor={colors.textSecondary}
+                />
+              )
+            )}
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalBtn, { backgroundColor: colors.border }]}
                 onPress={() => setEditVisible(false)}
               >
-                <Text style={{ color: colors.text }}>
-                  {t("profile.cancel")}
-                </Text>
+                <Text style={{ color: colors.text }}>Hủy</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalBtn, { backgroundColor: colors.primary }]}
                 onPress={handleSaveProfile}
               >
-                <Text style={{ color: "#fff" }}>{t("profile.save")}</Text>
+                <Text style={{ color: "#fff" }}>Lưu</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -406,7 +385,6 @@ const styles = StyleSheet.create({
   avatar: { width: 60, height: 60, borderRadius: 30, marginRight: 15 },
   name: { fontSize: 16, fontWeight: "600" },
   email: { fontSize: 14 },
-  age: { fontSize: 12 },
   editButton: {
     flexDirection: "row",
     alignItems: "center",

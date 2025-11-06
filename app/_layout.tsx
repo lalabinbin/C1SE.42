@@ -1,3 +1,7 @@
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { ThemeProvider as CustomThemeProvider } from "@/contexts/ThemeContext";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
   DarkTheme,
   DefaultTheme,
@@ -5,44 +9,71 @@ import {
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
-
-import { LanguageProvider } from "@/contexts/LanguageContext";
-import { ThemeProvider as CustomThemeProvider } from "@/contexts/ThemeContext";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import React, { useState, useEffect } from "react";
+import { ActivityIndicator, Text, View } from "react-native";
+import SplashScreen from "@/components/splash-screen";
 
 export const unstable_settings = {
   initialRouteName: "index",
 };
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function RootNavigator() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#636ae8" />
+        <Text style={{ marginTop: 10 }}>Đang tải thông tin người dùng...</Text>
+      </View>
+    );
+  }
 
   return (
-    <LanguageProvider>
-      <CustomThemeProvider>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <Stack>
-            {/* Splash Screen */}
-            <Stack.Screen name="index" options={{ headerShown: false }} />
+    <Stack screenOptions={{ headerShown: false }}>
+      {!user ? (
+        <Stack.Screen name="(auth)" />
+      ) : user.role === "teacher" ? (
+        <Stack.Screen name="(teacher)" />
+      ) : user.role === "admin" ? (
+        <Stack.Screen name="(admin)" />
+      ) : (
+        <Stack.Screen name="(tabs)" />
+      )}
+    </Stack>
+  );
+}
 
-            {/* Auth Screens */}
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+function RootLayoutInner() {
+  const colorScheme = useColorScheme();
+  const { loading } = useAuth();
+  const [showSplash, setShowSplash] = useState(true);
 
-            {/* Tabs Screens */}
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
-            {/* Modal */}
-            <Stack.Screen
-              name="modal"
-              options={{ presentation: "modal", title: "Modal" }}
-            />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </CustomThemeProvider>
-    </LanguageProvider>
+  if (showSplash || loading) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
+  }
+
+  return (
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <RootNavigator />
+      <StatusBar style="auto" />
+    </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <LanguageProvider>
+        <CustomThemeProvider>
+          <RootLayoutInner />
+        </CustomThemeProvider>
+      </LanguageProvider>
+    </AuthProvider>
   );
 }
