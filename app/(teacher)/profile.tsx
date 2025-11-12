@@ -26,17 +26,14 @@ export default function ProfileScreen() {
   const [editVisible, setEditVisible] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  // Thông tin giáo viên
   const [user, setUser] = useState<any>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
-  // Đổi mật khẩu
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // --- Lấy dữ liệu người dùng ---
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -75,14 +72,12 @@ export default function ProfileScreen() {
     ]);
   };
 
-  // --- Trung tâm hỗ trợ ---
   const openSupportLink = () => {
     Linking.openURL("https://support.elearnviet.com").catch(() =>
       Alert.alert("Lỗi", "Không thể mở liên kết.")
     );
   };
 
-  // --- Đổi mật khẩu ---
   const handleChangePassword = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
       Alert.alert("Lỗi", "Vui lòng điền đầy đủ thông tin.");
@@ -121,7 +116,6 @@ export default function ProfileScreen() {
     }
   };
 
-  // --- Lưu hồ sơ ---
   const handleSaveProfile = async () => {
     try {
       const users = JSON.parse(await AsyncStorage.getItem("users")) || [];
@@ -140,7 +134,6 @@ export default function ProfileScreen() {
     }
   };
 
-  // --- Đăng xuất ---
   const handleLogout = async () => {
     Alert.alert(t("profile.logout"), t("profile.logoutMessage"), [
       { text: t("profile.cancel"), style: "cancel" },
@@ -290,7 +283,6 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      {/* Modal chỉnh sửa hồ sơ */}
       <Modal visible={editVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>

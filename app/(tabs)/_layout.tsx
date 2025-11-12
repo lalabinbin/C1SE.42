@@ -100,6 +100,17 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="about"
+        options={{
+          title: t("about.title"),
+          href: null,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="information-circle-outline" color={color} size={22} />
+          ),
+        }}
+      />
     </Tabs>
+    
   );
 }
