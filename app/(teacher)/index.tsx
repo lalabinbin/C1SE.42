@@ -101,9 +101,7 @@ export default function TeacherDashboard() {
         </View>
       </View>
 
-      {/* Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Welcome Card */}
         <View style={[styles.welcomeCard, { backgroundColor: colors.surface }]}>
           <View>
             <Text style={[styles.welcomeTitle, { color: colors.text }]}>
@@ -126,7 +124,6 @@ export default function TeacherDashboard() {
           />
         </View>
 
-        {/* Quick Links */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
           {t("dashboard.quickLinks")}
         </Text>

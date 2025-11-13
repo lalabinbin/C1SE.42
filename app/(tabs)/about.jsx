@@ -7,7 +7,6 @@ import { router } from "expo-router";
 export default function AboutScreen() {
   return (
     <SafeAreaView style={styles.container}>
-      {/* HEADER */}
       <View style={styles.headerContainer}>
         <View style={styles.side}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -17,11 +16,9 @@ export default function AboutScreen() {
 
         <Text style={styles.headerText}>Giới thiệu eLearnViet</Text>
 
-        {/* View bên phải để cân xứng với icon bên trái */}
         <View style={styles.side} />
       </View>
 
-      {/* NỘI DUNG */}
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <Text style={styles.title}>Sứ mệnh của chúng tôi</Text>
@@ -71,7 +68,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   side: {
-    width: 40, // chiều rộng bằng với vùng icon để cân đối
+    width: 40,
     alignItems: "center",
   },
   backButton: {

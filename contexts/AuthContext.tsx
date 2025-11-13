@@ -7,7 +7,7 @@ interface User {
   email: string;
   phone: string;
   password: string;
-  role: "admin" | "teacher" | "student";
+  role: "admin" | "teacher" | "user";
 }
 
 interface AuthContextType {
@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const stored = await AsyncStorage.getItem("user");
+        const stored = await AsyncStorage.getItem("currentUser"); // ⚙️ đổi key cho nhất quán
         if (stored) setUser(JSON.parse(stored));
       } catch (err) {
         console.error("Lỗi khi load user:", err);
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     loadUser();
   }, []);
 
-  // 🟢 Tài khoản cứng
+  // 🟢 Tài khoản cố định
   const fixedAccounts: User[] = [
     {
       id: "t1",
@@ -53,14 +53,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     {
       id: "a1",
       name: "Quản trị viên",
-      email: "admin@example.com",
+      email: "admin@gmail.com",
       phone: "000",
-      password: "admin123",
+      password: "123",
       role: "admin",
     },
   ];
 
-  // 🟢 Đăng ký tài khoản học sinh
+  // 🟢 Đăng ký tài khoản user thường
   const register = async (newUser: Omit<User, "id" | "role">) => {
     const existing = JSON.parse((await AsyncStorage.getItem("users")) || "[]");
     const duplicate = existing.find(
@@ -71,14 +71,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const userWithRole: User = {
       id: Date.now().toString(),
       ...newUser,
-      role: "student",
+      role: "user",
     };
     existing.push(userWithRole);
     await AsyncStorage.setItem("users", JSON.stringify(existing));
-
-    // (Tuỳ bạn: đăng nhập luôn hay chỉ đăng ký)
-    // await AsyncStorage.setItem("currentUser", JSON.stringify(userWithRole));
-    // setUser(userWithRole);
   };
 
   // 🟢 Đăng nhập

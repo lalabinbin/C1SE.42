@@ -1,19 +1,14 @@
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { Stack } from "expo-router";
+import { Slot } from "expo-router";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout() {
   return (
     <LanguageProvider>
       <ThemeProvider>
         <AuthProvider>
-          <Stack screenOptions={{ headerShown: false }} />
-          {children}
+          <Slot /> 
         </AuthProvider>
       </ThemeProvider>
     </LanguageProvider>
