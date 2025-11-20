@@ -33,7 +33,6 @@ export default function LoginScreen() {
       fetchUserInfo(authentication.accessToken);
     }
   }, [response]);
-
   const fetchUserInfo = async (token) => {
     try {
       const res = await fetch("https://www.googleapis.com/userinfo/v2/me", {
